@@ -1,0 +1,80 @@
+ 
+jjl@guiautec:~/sources/scrippets/scripts/trunk/arduino/sketchbook/RGB/BlinkM/ReflashBlinkM$ ./flash.sh /dev/ttyACM0
+
+avrdude: please define PAGEL and BS2 signals in the configuration file for part ATtiny45
+avrdude: AVR device initialized and ready to accept instructions
+
+Reading | ################################################## | 100% 0.06s
+
+avrdude: Device signature = 0x1e9206
+avrdude: reading lfuse memory:
+
+Reading | ################################################## | 100% 0.02s
+
+avrdude: writing output file "<stdout>"
+0b1100010
+avrdude: reading hfuse memory:
+
+Reading | ################################################## | 100% 0.02s
+
+avrdude: writing output file "<stdout>"
+0b11011111
+avrdude: reading efuse memory:
+
+Reading | ################################################## | 100% 0.02s
+
+avrdude: writing output file "<stdout>"
+0b11111111
+
+avrdude: safemode: Fuses OK
+
+avrdude done.  Thank you.
+
+
+avrdude: please define PAGEL and BS2 signals in the configuration file for part ATtiny45
+avrdude: AVR device initialized and ready to accept instructions
+
+Reading | ################################################## | 100% 0.06s
+
+avrdude: Device signature = 0x1e9206
+avrdude: NOTE: FLASH memory has been specified, an erase cycle will be performed
+         To disable this feature, specify the -D option.
+avrdude: erasing chip
+avrdude: please define PAGEL and BS2 signals in the configuration file for part ATtiny45
+avrdude: reading input file "blinkmv1.hex"
+avrdude: input file blinkmv1.hex auto detected as Intel Hex
+avrdude: writing flash (3868 bytes):
+
+Writing | ################################################## | 100% 6.47s
+
+avrdude: 3868 bytes of flash written
+avrdude: reading input file "blinkmv1.eep"
+avrdude: input file blinkmv1.eep auto detected as Intel Hex
+avrdude: writing eeprom (39 bytes):
+
+Writing | ################################################## | 100% 2.17s
+
+avrdude: 39 bytes of eeprom written
+
+avrdude: safemode: Fuses OK
+
+avrdude done.  Thank you.
+
+
+avrdude: please define PAGEL and BS2 signals in the configuration file for part ATtiny45
+avrdude: AVR device initialized and ready to accept instructions
+
+Reading | ################################################## | 100% 0.06s
+
+avrdude: Device signature = 0x1e9206
+avrdude: reading input file "0xDD"
+avrdude: writing lfuse (1 bytes):
+
+Writing | ################################################## | 100% 0.06s
+
+avrdude: 1 bytes of lfuse written
+
+avrdude: safemode: Fuses OK
+
+avrdude done.  Thank you.
+
