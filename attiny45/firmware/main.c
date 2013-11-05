@@ -118,7 +118,7 @@ uint8_t readRegister (uint16_t reg, uint16_t* pValue)
  * @param value the value to be written.
  * @return USI_TWI_Get_State_Info. See usiTwiMaster.h for error codes.
  */
-uint8_t writeRegister (uint16_t reg, uint8_t value)
+uint8_t writeRegister (uint16_t reg, uint16_t value)
 {
    uint8_t messageBuf[MESSAGEBUF_SIZE];
    
@@ -126,8 +126,9 @@ uint8_t writeRegister (uint16_t reg, uint8_t value)
    messageBuf[0] = RF430_I2C_ADDRESS << TWI_ADR_BITS;
    messageBuf[1] = reg >> 8;
    messageBuf[2] = reg & 0xFF;
-   messageBuf[3] = value;
-   USI_TWI_Start_Transceiver_With_Data( messageBuf, 4 );
+   messageBuf[3] = value & 0xFF;
+   messageBuf[4] = value >> 8;
+   USI_TWI_Start_Transceiver_With_Data( messageBuf, 5 );
    
    return USI_TWI_Get_State_Info();
 } // writeRegister
