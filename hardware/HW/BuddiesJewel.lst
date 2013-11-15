@@ -1,0 +1,54 @@
+eeschema (2013-07-07 BZR 4022)-stable  >> Creation date: 12/11/2013 22:37:19
+#Cmp ( ordre = Référence )
+| C1         C           
+| C2         C           
+| C3         C           
+| CON1       AVR-ISP-6   
+| D1         WS2812      
+| D2         RGB_LED     
+| IC1        ATTINY25-P  
+| JP1        JUMPER      
+| JP2        JUMPER      
+| P1         ALIM        
+| R1         R           
+| R2         R           
+| R3         R           
+| R4         R           
+| R5         R           
+| R6         R           
+| R7         R           
+| R8         R           
+| U1         PT          
+| U2         PT          
+| U3         PT          
+| U4         PT          
+| U5         RF430CL330H 
+#End Cmp
+
+#Cmp ( ordre = Valeur )
+| C            C1        
+| C            C2        
+| C            C3        
+| AVR-ISP-6    CON1      
+| WS2812       D1        
+| RGB_LED      D2        
+| ATTINY25-P   IC1       
+| JUMPER       JP1       
+| JUMPER       JP2       
+| ALIM         P1        
+| R            R1        
+| R            R2        
+| R            R3        
+| R            R4        
+| R            R5        
+| R            R6        
+| R            R7        
+| R            R8        
+| PT           U1        
+| PT           U2        
+| PT           U3        
+| PT           U4        
+| RF430CL330H  U5        
+#End Cmp
+
+#End List
