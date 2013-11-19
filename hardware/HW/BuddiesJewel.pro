@@ -1,6 +1,6 @@
-update=18/11/2013 14:49:54
+update=19/11/2013 17:39:21
 version=1
-last_client=eeschema
+last_client=kicad
 [pcbnew]
 version=1
 LastNetListRead=
@@ -40,8 +40,6 @@ LibName16=valves
 LibName17=BuddiesJewel
 LibName18=dips-s
 LibDir=
-[general]
-version=1
 [cvpcb]
 version=1
 NetIExt=net
@@ -87,3 +85,5 @@ LibName28=atmel
 LibName29=contrib
 LibName30=valves
 LibName31=BuddiesJewel-cache
+[general]
+version=1
