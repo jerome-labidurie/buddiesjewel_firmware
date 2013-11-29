@@ -1,6 +1,6 @@
-update=19/11/2013 17:39:21
+update=ven. 29 nov. 2013 02:22:28 CET
 version=1
-last_client=kicad
+last_client=eeschema
 [pcbnew]
 version=1
 LastNetListRead=
@@ -45,6 +45,8 @@ version=1
 NetIExt=net
 [cvpcb/libraries]
 EquName1=devcms
+[general]
+version=1
 [eeschema]
 version=1
 LibDir=
@@ -85,5 +87,3 @@ LibName28=atmel
 LibName29=contrib
 LibName30=valves
 LibName31=BuddiesJewel-cache
-[general]
-version=1
