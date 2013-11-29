@@ -3,7 +3,7 @@
   (general
     (links 53)
     (no_connects 0)
-    (area 48.611 21.336 91.406001 59.275)
+    (area 48.861 21.336 91.406001 59.275)
     (thickness 1.6)
     (drawings 12)
     (tracks 218)
@@ -89,7 +89,7 @@
       (mirror false)
       (drillshape 1)
       (scaleselection 1)
-      (outputdirectory D:/git/jerome-labidurie/hardware/HW/))
+      (outputdirectory svg))
   )
 
   (net 0 "")
@@ -898,7 +898,7 @@
   )
 
   (gr_text BOTTOM (at 68.25 28.25) (layer Dessous.Cu)
-    (effects (font (size 1.5 1.5) (thickness 0.3)) (justify mirror))
+    (effects (font (size 1.5 1.5) (thickness 0.3)))
   )
   (gr_text TOP (at 68.75 28.25) (layer Dessus.Cu)
     (effects (font (size 1.5 1.5) (thickness 0.3)))
