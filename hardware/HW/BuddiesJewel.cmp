@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2013-mar-13)-testing date = jeu. 28 nov. 2013 13:49:46 CET
+Cmp-Mod V01 Created by CvPcb (2013-07-07 BZR 4022)-stable date = 01/12/2013 20:13:25
 
 BeginCmp
 TimeStamp = /5263BFC3;
@@ -64,13 +64,6 @@ IdModule  = PIN_ARRAY_3X1;
 EndCmp
 
 BeginCmp
-TimeStamp = /5283EF71;
-Reference = IC1;
-ValeurCmp = ATTINY25-P;
-IdModule  = DIPS-DS04;
-EndCmp
-
-BeginCmp
 TimeStamp = /5283EA50;
 Reference = JP1;
 ValeurCmp = JUMPER;
@@ -82,6 +75,48 @@ TimeStamp = /5263BDB9;
 Reference = P1;
 ValeurCmp = ALIM;
 IdModule  = Alim;
+EndCmp
+
+BeginCmp
+TimeStamp = /5283E30A;
+Reference = PT1;
+ValeurCmp = PT;
+IdModule  = TEST_POINT_1mm;
+EndCmp
+
+BeginCmp
+TimeStamp = /5283E319;
+Reference = PT2;
+ValeurCmp = PT;
+IdModule  = TEST_POINT_1mm;
+EndCmp
+
+BeginCmp
+TimeStamp = /5283F22D;
+Reference = PT3;
+ValeurCmp = PT;
+IdModule  = TEST_POINT_1mm;
+EndCmp
+
+BeginCmp
+TimeStamp = /5283F23C;
+Reference = PT4;
+ValeurCmp = PT;
+IdModule  = TEST_POINT_1mm;
+EndCmp
+
+BeginCmp
+TimeStamp = /529B82DD;
+Reference = PT5;
+ValeurCmp = PT;
+IdModule  = TEST_POINT_1mm;
+EndCmp
+
+BeginCmp
+TimeStamp = /529B89E6;
+Reference = PT6;
+ValeurCmp = PT;
+IdModule  = TEST_POINT_1mm;
 EndCmp
 
 BeginCmp
@@ -134,38 +169,17 @@ IdModule  = SM0603_Resistor;
 EndCmp
 
 BeginCmp
-TimeStamp = /5283F22D;
+TimeStamp = /5283EF71;
 Reference = U1;
-ValeurCmp = PT;
-IdModule  = PT;
-EndCmp
-
-BeginCmp
-TimeStamp = /5283E30A;
-Reference = U2;
-ValeurCmp = PT;
-IdModule  = PT;
-EndCmp
-
-BeginCmp
-TimeStamp = /5283E319;
-Reference = U3;
-ValeurCmp = PT;
-IdModule  = PT;
-EndCmp
-
-BeginCmp
-TimeStamp = /5283F23C;
-Reference = U4;
-ValeurCmp = PT;
-IdModule  = PT;
+ValeurCmp = ATTINY25-P;
+IdModule  = DIP-8__300;
 EndCmp
 
 BeginCmp
 TimeStamp = /5263BC72;
-Reference = U5;
+Reference = U2;
 ValeurCmp = RF430CL330H;
-IdModule  = PW14;
+IdModule  = DIP-14__300;
 EndCmp
 
 EndListe
