@@ -2,11 +2,11 @@
 
   (general
     (links 53)
-    (no_connects 0)
-    (area 48.611 21.336 91.406001 59.275)
+    (no_connects 1)
+    (area 48.861 21.336 91.406001 59.275)
     (thickness 1.6)
     (drawings 12)
-    (tracks 218)
+    (tracks 217)
     (zones 0)
     (modules 24)
     (nets 21)
@@ -89,7 +89,7 @@
       (mirror false)
       (drillshape 1)
       (scaleselection 1)
-      (outputdirectory D:/git/jerome-labidurie/hardware/HW/))
+      (outputdirectory svg))
   )
 
   (net 0 "")
@@ -898,7 +898,7 @@
   )
 
   (gr_text BOTTOM (at 68.25 28.25) (layer Dessous.Cu)
-    (effects (font (size 1.5 1.5) (thickness 0.3)) (justify mirror))
+    (effects (font (size 1.5 1.5) (thickness 0.3)))
   )
   (gr_text TOP (at 68.75 28.25) (layer Dessus.Cu)
     (effects (font (size 1.5 1.5) (thickness 0.3)))
@@ -1097,7 +1097,6 @@
   (segment (start 73.25 28.25) (end 73 28.25) (width 0.5) (layer Dessus.Cu) (net 9))
   (segment (start 71.25 30) (end 68.75 30) (width 0.5) (layer Dessus.Cu) (net 9) (tstamp 5297D6F7))
   (segment (start 73 28.25) (end 71.25 30) (width 0.5) (layer Dessus.Cu) (net 9) (tstamp 5297D6F3))
-  (segment (start 73.25 28.25) (end 72.738 28.762) (width 0.5) (layer Dessus.Cu) (net 9) (tstamp 5297CF28))
   (segment (start 77.75 28.25) (end 73.25 28.25) (width 0.5) (layer Dessus.Cu) (net 9) (tstamp 5297CF1F))
   (segment (start 79.75 30.25) (end 77.75 28.25) (width 0.5) (layer Dessus.Cu) (net 9) (tstamp 5297CF18))
   (segment (start 79.75 47) (end 79.75 30.25) (width 0.5) (layer Dessus.Cu) (net 9) (tstamp 5297CF07))
