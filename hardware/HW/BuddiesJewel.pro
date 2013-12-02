@@ -1,8 +1,6 @@
-update=01/12/2013 13:26:27
+update=02/12/2013 02:49:24
 version=1
-last_client=pcbnew
-[general]
-version=1
+last_client=kicad
 [eeschema]
 version=1
 LibDir=
@@ -87,3 +85,5 @@ LibName15=pga_sockets
 LibName16=valves
 LibName17=BuddiesJewel
 LibName18=dips-s
+[general]
+version=1
