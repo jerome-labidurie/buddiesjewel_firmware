@@ -36,10 +36,10 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title "BuddiesJewel"
-Date "1 dec 2013"
-Rev "1.2"
-Comp "FabLab"
+Title "Schema Proto BuddiesJewel"
+Date "3 dec 2013"
+Rev "1.4"
+Comp "BuddiesProjects"
 Comment1 ""
 Comment2 ""
 Comment3 ""
@@ -259,21 +259,10 @@ F 3 "~" H 2100 2450 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L JUMPER JP1
-U 1 1 5283EA50
-P 5750 5850
-F 0 "JP1" H 5750 6000 60  0000 C CNN
-F 1 "JUMPER" H 5750 5770 40  0000 C CNN
-F 2 "~" H 5750 5850 60  0000 C CNN
-F 3 "~" H 5750 5850 60  0000 C CNN
-	1    5750 5850
-	1    0    0    -1  
-$EndComp
-$Comp
-L WS2812 D1
+L WS2812 U3
 U 1 1 5283EC88
 P 4150 5600
-F 0 "D1" H 4050 5550 60  0000 C CNN
+F 0 "U3" H 4050 5550 60  0000 C CNN
 F 1 "WS2812" H 4250 5100 60  0000 C CNN
 F 2 "~" H 4250 5100 60  0000 C CNN
 F 3 "~" H 4250 5100 60  0000 C CNN
@@ -528,7 +517,7 @@ Wire Wire Line
 Wire Wire Line
 	2400 2750 2400 2550
 Wire Wire Line
-	6050 5850 6800 5850
+	5950 5850 6800 5850
 Wire Wire Line
 	6500 5850 6500 5350
 Wire Wire Line
@@ -673,10 +662,10 @@ F 3 "" H 6750 6100 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L EXT_LED D2
+L EXT_LED CON3
 U 1 1 528A5C24
 P 7250 5650
-F 0 "D2" H 7150 5650 60  0000 C CNN
+F 0 "CON3" H 7150 5650 60  0000 C CNN
 F 1 "EXT_LED" H 7250 5250 60  0000 C CNN
 F 2 "~" H 7150 5650 60  0000 C CNN
 F 3 "~" H 7150 5650 60  0000 C CNN
@@ -759,4 +748,15 @@ Wire Wire Line
 	2800 4150 2800 4850
 Wire Wire Line
 	2800 4850 2350 4850
+$Comp
+L R R8
+U 1 1 529D238F
+P 5700 5850
+F 0 "R8" V 5780 5850 40  0000 C CNN
+F 1 "zero R" V 5707 5851 40  0000 C CNN
+F 2 "~" V 5630 5850 30  0000 C CNN
+F 3 "~" H 5700 5850 30  0000 C CNN
+	1    5700 5850
+	0    1    1    0   
+$EndComp
 $EndSCHEMATC

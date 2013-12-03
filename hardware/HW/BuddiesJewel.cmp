@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2013-07-07 BZR 4022)-stable date = 01/12/2013 20:13:25
+Cmp-Mod V01 Created by CvPcb (2013-07-07 BZR 4022)-stable date = 03/12/2013 01:18:30
 
 BeginCmp
 TimeStamp = /5263BFC3;
@@ -50,24 +50,10 @@ IdModule  = PIN_ARRAY_2X2;
 EndCmp
 
 BeginCmp
-TimeStamp = /5283EC88;
-Reference = D1;
-ValeurCmp = WS2812;
-IdModule  = WS2812;
-EndCmp
-
-BeginCmp
 TimeStamp = /528A5C24;
-Reference = D2;
+Reference = CON3;
 ValeurCmp = EXT_LED;
 IdModule  = PIN_ARRAY_3X1;
-EndCmp
-
-BeginCmp
-TimeStamp = /5283EA50;
-Reference = JP1;
-ValeurCmp = JUMPER;
-IdModule  = Jumper;
 EndCmp
 
 BeginCmp
@@ -169,17 +155,31 @@ IdModule  = SM0603_Resistor;
 EndCmp
 
 BeginCmp
+TimeStamp = /529D238F;
+Reference = R8;
+ValeurCmp = zero R;
+IdModule  = SM0603_Resistor;
+EndCmp
+
+BeginCmp
 TimeStamp = /5283EF71;
 Reference = U1;
 ValeurCmp = ATTINY25-P;
-IdModule  = DIP-8__300;
+IdModule  = DIP-8__300_ELL;
 EndCmp
 
 BeginCmp
 TimeStamp = /5263BC72;
 Reference = U2;
 ValeurCmp = RF430CL330H;
-IdModule  = DIP-14__300;
+IdModule  = DIP-14__300_ELL;
+EndCmp
+
+BeginCmp
+TimeStamp = /5283EC88;
+Reference = U3;
+ValeurCmp = WS2812;
+IdModule  = WS2812;
 EndCmp
 
 EndListe
