@@ -26,8 +26,14 @@
  *                     success of the transmission.
  *
  ****************************************************************************/
+
 #include <util/delay.h>
 #include "usiTwiMaster.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 unsigned char USI_TWI_Master_Transfer( unsigned char );
 unsigned char USI_TWI_Master_Stop( void );
@@ -271,4 +277,7 @@ unsigned char USI_TWI_Master_Stop( void )
 	return (TRUE);
 }
 
+#ifdef __cplusplus
+}
+#endif
 
