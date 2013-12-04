@@ -1,14 +1,14 @@
-update=13/11/2013 21:43:05
+update=03/12/2013 01:17:32
 version=1
-last_client=eeschema
+last_client=cvpcb
 [pcbnew]
 version=1
-LastNetListRead=
+LastNetListRead=BuddiesJewel.net
 UseCmpFile=1
-PadDrill=0.600000000000
-PadDrillOvalY=0.600000000000
-PadSizeH=1.500000000000
-PadSizeV=1.500000000000
+PadDrill=0.500000000000
+PadDrillOvalY=0.500000000000
+PadSizeH=1.000000000000
+PadSizeV=1.000000000000
 PcbTextSizeV=1.500000000000
 PcbTextSizeH=1.500000000000
 PcbTextThickness=0.300000000000
@@ -42,11 +42,6 @@ LibName18=dips-s
 LibDir=
 [general]
 version=1
-[cvpcb]
-version=1
-NetIExt=net
-[cvpcb/libraries]
-EquName1=devcms
 [eeschema]
 version=1
 LibDir=
@@ -87,3 +82,8 @@ LibName28=atmel
 LibName29=contrib
 LibName30=valves
 LibName31=BuddiesJewel-cache
+[cvpcb]
+version=1
+NetIExt=net
+[cvpcb/libraries]
+EquName1=devcms
