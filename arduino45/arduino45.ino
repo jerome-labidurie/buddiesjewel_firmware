@@ -54,14 +54,25 @@
 #include <avr/interrupt.h>
 
 #include "usiTwiMaster.h"
-//#include "neoPixel/NeoPixel.h"
 #include "RF430CL330H.h"
+
+#include <Adafruit_NeoPixel.h>
 
 #define MESSAGEBUF_SIZE       4
 
 #define LED PB1
+#define NEO 4
 #define QUICK 300
 #define LONG 1000
+
+// Parameter 1 = number of pixels in strip
+// Parameter 2 = pin number (most are valid)
+// Parameter 3 = pixel type flags, add together as needed:
+//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
+//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
+//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
+Adafruit_NeoPixel led = Adafruit_NeoPixel(1, NEO, NEO_GRB + NEO_KHZ800);
 
 /** do some quick blinks
  * @param n number of blinks
@@ -142,31 +153,39 @@ void setup()
 {
 
    _delay_ms (2000);
+   led.begin();
+   led.setPixelColor (0, 0, 0, 255); // Blue
+
+   led.show(); // Initialize pixel to 'off'
    
    DDRB |= _BV(LED); // PBx as output
    // quick 2 blinks
    quickBlink (2);
-   
-   USI_TWI_Master_Initialise();  
+
+   USI_TWI_Master_Initialise();
    
    temp = readRegister  (VERSION_REG, &value);
    temp = writeRegister (CONTROL_REG, RF_ENABLE);
    temp = readRegister  (CONTROL_REG, &value);
-}
+} // setup
 
 void loop()
 {
-    _delay_ms (100);
-    temp = readRegister (STATUS_REG, &value);
-    
-    if (temp != 0) {
-       quickBlink (temp);
-    }
-    else {
-       longBlink (value>>8);
-       _delay_ms (LONG*2);
-       longBlink (value & 0xFF);
-    }
-
-} // main
+//    led.setPixelColor (0, 255, 0, 255); 
+//    led.show();
+   _delay_ms (1000);
+   temp = readRegister (STATUS_REG, &value);
+   
+   if (temp != 0) {
+      led.setPixelColor (0, 255, 0, 0); //red
+//       quickBlink(temp);
+   }
+   else {
+      led.setPixelColor (0, 0, 255, 0); //green
+//       longBlink (value>>8);
+//       _delay_ms (LONG*2);
+//       longBlink (value & 0xFF);
+   }
+   led.show();
+} // loop
 
