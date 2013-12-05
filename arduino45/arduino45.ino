@@ -40,11 +40,12 @@
  *   E2 -|  7   8 |- Int
  *        --------
  * 
- * AT45    RF430
- * -------------
+ * AT45    RF430   NeoPixel
+ * -------------------
  * PB2 --- SCL
  * PB0 --- SDA
  * GND --- Gnd,E0,E1,E2,/CS,
+ * PB4 ----------- In
  * 
  *********************************************************************/
 
@@ -56,11 +57,12 @@
 #include "RF430CL330H.h"
 
 #include <Adafruit_NeoPixel.h>
+#include <EEPROM.h>
 
 #define MESSAGEBUF_SIZE       10
 
 #define NEO 4
-#define QUICK 300
+#define QUICK 100
 #define LONG 1000
 
 // predefined colors
@@ -78,8 +80,10 @@
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 Adafruit_NeoPixel led = Adafruit_NeoPixel(1, NEO, NEO_GRB + NEO_KHZ800);
 
-uint8_t temp = 0;
-uint16_t value = 0;
+uint8_t temp = 0;    /** temporary variable */
+uint16_t value = 0;  /** used to store read values from registers */
+uint32_t savedColor = 0x000000; /** color read from eeprom */
+
 
 /** do some quick blinks
  * @param n number of blinks
@@ -123,13 +127,15 @@ uint8_t readRegister (uint16_t reg, uint16_t* pValue)
 } // readRegister
 
 /** read NFC data from RF430 
+ * 
+ * If active, RF must be disabled before. eg: writeRegister (CONTROL_REG, 0);
+ * Note: offset+length must be < 0x0BFF. Else we go into registers.
+ * 
  * @param offset the offset in NFC tag data
  * @param length the length to be read
  * @param data byte array for the read data. Must be at least length+1. Read data begins at data[1]
  * @return USI_TWI_Get_State_Info. See usiTwiMaster.h for error codes.
  * 
- * if active, RF must be disabled before. eg: writeRegister (CONTROL_REG, 0);
- * Note: offset+length must be < 0x0BFF. Else we go into registers.
  */
 uint8_t readData (uint16_t offset, uint16_t length, uint8_t* data)
 {
@@ -169,15 +175,19 @@ uint8_t writeRegister (uint16_t reg, uint16_t value)
    
 void setup()
 {
-
-   _delay_ms (2000);
-   led.begin();
-   led.show(); // Initialize pixel to 'off'
-   
    // quick 2 blue blinks
+   led.begin();
+   USI_TWI_Master_Initialise();
    quickBlink (2, BLUE );
 
-   USI_TWI_Master_Initialise();
+   // read color from eeprom
+   savedColor = ((uint32_t)EEPROM.read(0)<<16) | ((uint32_t)EEPROM.read(1)<<8) | EEPROM.read(2);
+   // Initialize pixel to saved color
+   led.setPixelColor (0, savedColor);
+   led.show();
+   // Initialize tag with color
+   // TODO :)
+
    
    temp = readRegister  (VERSION_REG, &value);
    temp = writeRegister (CONTROL_REG, RF_ENABLE);
@@ -186,8 +196,9 @@ void setup()
 
 void loop()
 {
-//    led.setPixelColor (0, 255, 0, 255); 
-//    led.show();
+   uint8_t data[MESSAGEBUF_SIZE]; /** array to store read NDEF data */
+   uint32_t readColor = 0;
+
    _delay_ms (1000);
    temp = readRegister (STATUS_REG, &value);
    
@@ -201,7 +212,6 @@ void loop()
          // we should only disable the right bit !
          temp = writeRegister (CONTROL_REG, 0x0);
          // read ndef data
-         uint8_t data[MESSAGEBUF_SIZE];
          // 0x1C: NDEf begin 0x24: offset to color
          temp = readData (0x1C + 0x25, 4, data);
          // enable RF
@@ -209,8 +219,16 @@ void loop()
          if (data[1] == 0xFF)
          {
             // first read byte if 0xFF, this is transparency, assume color is ok
-            led.setPixelColor (0, data[2], data[3], data[4]);
+            readColor = ((uint32_t)data[2]<<16) | ((uint32_t)data[3]<<8) | data[4];
+            led.setPixelColor (0, readColor );
             led.show();
+            // if needed, save new color in eeprom
+            if (savedColor != readColor) {
+               EEPROM.write(0, readColor >> 16);
+               EEPROM.write(1, (readColor >> 8) & 0xFF);
+               EEPROM.write(2, readColor & 0xFF);
+               savedColor = readColor;
+            }
          }
       }
    }
