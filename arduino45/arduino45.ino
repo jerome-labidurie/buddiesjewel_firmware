@@ -44,7 +44,6 @@
  * -------------
  * PB2 --- SCL
  * PB0 --- SDA
- * PB1 --- <Debug LED>
  * GND --- Gnd,E0,E1,E2,/CS,
  * 
  *********************************************************************/
@@ -58,12 +57,17 @@
 
 #include <Adafruit_NeoPixel.h>
 
-#define MESSAGEBUF_SIZE       4
+#define MESSAGEBUF_SIZE       10
 
-#define LED PB1
 #define NEO 4
 #define QUICK 300
 #define LONG 1000
+
+// predefined colors
+//      NAME      0xRRGGBB
+#define BLUE      0x0000FF
+#define GREEN     0x00FF00
+#define RED       0xFF0000
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = pin number (most are valid)
@@ -74,33 +78,26 @@
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 Adafruit_NeoPixel led = Adafruit_NeoPixel(1, NEO, NEO_GRB + NEO_KHZ800);
 
+uint8_t temp = 0;
+uint16_t value = 0;
+
 /** do some quick blinks
  * @param n number of blinks
+ * @param color the color to blink (created by Adafruit_NeoPixel.Color() )
  */
-void quickBlink (uint8_t n)
+void quickBlink (uint8_t n, uint32_t color)
 {
    while (n-- != 0)
    {
-      PORTB |= _BV(LED); // on
+      led.setPixelColor (0, color );
+      led.show();
       _delay_ms (QUICK);
-      PORTB &= ~ _BV(LED); // off
+      led.setPixelColor (0, 0 );
+      led.show();
       _delay_ms (QUICK);
    }
 } //quickBlink
 
-/** do some long blinks
- * @param n number of blinks
- */
-void longBlink (uint8_t n)
-{
-   while (n-- != 0)
-   {
-      PORTB |= _BV(LED); // on
-      _delay_ms (LONG);
-      PORTB &= ~ _BV(LED); // off
-      _delay_ms (LONG);
-   }
-} //longBlink
 
 /** read register from RF430
  * @param reg the register address to read. See RF430CL330H.h.
@@ -125,6 +122,29 @@ uint8_t readRegister (uint16_t reg, uint16_t* pValue)
    return USI_TWI_Get_State_Info();
 } // readRegister
 
+/** read NFC data from RF430 
+ * @param offset the offset in NFC tag data
+ * @param length the length to be read
+ * @param data byte array for the read data. Must be at least length+1. Read data begins at data[1]
+ * @return USI_TWI_Get_State_Info. See usiTwiMaster.h for error codes.
+ * 
+ * if active, RF must be disabled before. eg: writeRegister (CONTROL_REG, 0);
+ * Note: offset+length must be < 0x0BFF. Else we go into registers.
+ */
+uint8_t readData (uint16_t offset, uint16_t length, uint8_t* data)
+{
+   // write data address
+   data[0] = RF430_I2C_ADDRESS << TWI_ADR_BITS;
+   data[1] = offset >> 8;
+   data[2] = offset & 0xFF;
+   USI_TWI_Start_Transceiver_With_Data( data, 3 );
+   // read register
+   data[0] = ( RF430_I2C_ADDRESS << TWI_ADR_BITS ) | (RF430_I2C_READBIT);
+   USI_TWI_Start_Transceiver_With_Data( data, length + 1 );
+
+   return USI_TWI_Get_State_Info();
+} // readData
+
 /** write a register to RF430
  * @param reg the register address to write. See RF430CL330H.h.
  * @param value the value to be written.
@@ -146,21 +166,16 @@ uint8_t writeRegister (uint16_t reg, uint16_t value)
 } // writeRegister
 
 /****** MAIN ******/
-   uint8_t temp = 0;
-   uint16_t value = 0;
    
 void setup()
 {
 
    _delay_ms (2000);
    led.begin();
-   led.setPixelColor (0, 0, 0, 255); // Blue
-
    led.show(); // Initialize pixel to 'off'
    
-   DDRB |= _BV(LED); // PBx as output
-   // quick 2 blinks
-   quickBlink (2);
+   // quick 2 blue blinks
+   quickBlink (2, BLUE );
 
    USI_TWI_Master_Initialise();
    
@@ -177,15 +192,27 @@ void loop()
    temp = readRegister (STATUS_REG, &value);
    
    if (temp != 0) {
-      led.setPixelColor (0, 255, 0, 0); //red
-//       quickBlink(temp);
+      quickBlink(temp, RED );
    }
    else {
-      led.setPixelColor (0, 0, 255, 0); //green
-//       longBlink (value>>8);
-//       _delay_ms (LONG*2);
-//       longBlink (value & 0xFF);
+      if ( ! ( (value>>8) & RF_BUSY ) )
+      {
+         // no rf field present, disable RF
+         // we should only disable the right bit !
+         temp = writeRegister (CONTROL_REG, 0x0);
+         // read ndef data
+         uint8_t data[MESSAGEBUF_SIZE];
+         // 0x1C: NDEf begin 0x24: offset to color
+         temp = readData (0x1C + 0x25, 4, data);
+         // enable RF
+         temp = writeRegister (CONTROL_REG, RF_ENABLE);
+         if (data[1] == 0xFF)
+         {
+            // first read byte if 0xFF, this is transparency, assume color is ok
+            led.setPixelColor (0, data[2], data[3], data[4]);
+            led.show();
+         }
+      }
    }
-   led.show();
 } // loop
 
