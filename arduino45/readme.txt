@@ -5,6 +5,7 @@ Install
 
 Install attiny support for arduibo IDE
 See here http://hlt.media.mit.edu/?p=1695
+Or here http://code.google.com/p/arduino-tiny/
 - board type: Attiny45 (internal 8MHz clock)
 Burn bootloader (to set the fuses)
 
