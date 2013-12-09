@@ -178,7 +178,9 @@ void setup()
    // quick 2 blue blinks
    led.begin();
    USI_TWI_Master_Initialise();
-   quickBlink (2, BLUE );
+   temp = readRegister  (VERSION_REG, &value);
+   quickBlink (value>>8, BLUE );
+   quickBlink (value, GREEN);
 
    // read color from eeprom
    savedColor = ((uint32_t)EEPROM.read(0)<<16) | ((uint32_t)EEPROM.read(1)<<8) | EEPROM.read(2);
@@ -189,7 +191,6 @@ void setup()
    // TODO :)
 
    
-   temp = readRegister  (VERSION_REG, &value);
    temp = writeRegister (CONTROL_REG, RF_ENABLE);
    temp = readRegister  (CONTROL_REG, &value);
 } // setup
