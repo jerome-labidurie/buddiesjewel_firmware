@@ -42,6 +42,7 @@
  * 
  * AT45    RF430   NeoPixel
  * -------------------
+ * PB1 --- INT0
  * PB2 --- SCL
  * PB0 --- SDA
  * GND --- Gnd,E0,E1,E2,/CS,
@@ -63,13 +64,16 @@
 
 #define NEO 4
 #define QUICK 100
-#define LONG 1000
 
+#define  CONTROL_REG_VALUE RF_ENABLE | INT_ENABLE | INTO_HIGH | INTO_DRIVE
 // predefined colors
 //      NAME      0xRRGGBB
 #define BLUE      0x0000FF
 #define GREEN     0x00FF00
 #define RED       0xFF0000
+#define YELLOW    0xFFFF00
+#define CYAN      0x00FFFF
+#define MAGENTA   0xFF00FF
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = pin number (most are valid)
@@ -83,7 +87,7 @@ Adafruit_NeoPixel led = Adafruit_NeoPixel(1, NEO, NEO_GRB + NEO_KHZ800);
 uint8_t temp = 0;    /** temporary variable */
 uint16_t value = 0;  /** used to store read values from registers */
 uint32_t savedColor = 0x000000; /** color read from eeprom */
-
+volatile int tag_state = LOW; /** tag has been accedded */
 
 /** do some quick blinks
  * @param n number of blinks
@@ -171,19 +175,56 @@ uint8_t writeRegister (uint16_t reg, uint16_t value)
    return USI_TWI_Get_State_Info();
 } // writeRegister
 
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+  if(WheelPos < 85) {
+   return led.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+  } else if(WheelPos < 170) {
+   WheelPos -= 85;
+   return led.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  } else {
+   WheelPos -= 170;
+   return led.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+}
+
+void rainbow(uint8_t wait) {
+  uint16_t i, j;
+
+  for(j=0; j<256; j++) {
+   led.setPixelColor(i, Wheel((i+j) & 255));
+   led.show();
+    delay(wait);
+  }
+}
+
+/** interrupt service routine
+ * called when PCINT changes state
+ */
+ISR(PCINT0_vect)
+{
+   //    quickBlink (2, BLUE );
+   tag_state = HIGH;
+   return;
+} // ISR(PCINT0_vect) 
+
 /****** MAIN ******/
    
 void setup()
 {
    // quick 2 blue blinks
    led.begin();
+   quickBlink (1, BLUE );
    USI_TWI_Master_Initialise();
    temp = readRegister  (VERSION_REG, &value);
-   quickBlink (value>>8, BLUE );
+   quickBlink (value>>8, GREEN );
    quickBlink (value, GREEN);
 
    // read color from eeprom
    savedColor = ((uint32_t)EEPROM.read(0)<<16) | ((uint32_t)EEPROM.read(1)<<8) | EEPROM.read(2);
+   
+   rainbow(5);
    // Initialize pixel to saved color
    led.setPixelColor (0, savedColor);
    led.show();
@@ -191,8 +232,14 @@ void setup()
    // TODO :)
 
    
-   temp = writeRegister (CONTROL_REG, RF_ENABLE);
+   temp = writeRegister (INT_ENABLE_REG,EOW_INT_ENABLE | EOR_INT_ENABLE );
+   temp = writeRegister (CONTROL_REG,CONTROL_REG_VALUE );
    temp = readRegister  (CONTROL_REG, &value);
+   
+   // initialize interrupts
+   PCMSK |= _BV(PCINT1); // enable interrupt for PCINT1
+   GIMSK |= _BV(PCIE);   // enable Pin Change interrupts
+   sei(); // enable global interrupts
 } // setup
 
 void loop()
@@ -200,36 +247,32 @@ void loop()
    uint8_t data[MESSAGEBUF_SIZE]; /** array to store read NDEF data */
    uint32_t readColor = 0;
 
-   _delay_ms (1000);
-   temp = readRegister (STATUS_REG, &value);
-   
-   if (temp != 0) {
-      quickBlink(temp, RED );
-   }
-   else {
-      if ( ! ( (value>>8) & RF_BUSY ) )
+//    _delay_ms (1000);
+   if ((tag_state == HIGH))
+   {
+      tag_state = LOW;
+      // no rf field present, disable RF
+      // TODO: we might only disable the right bit !
+      temp = writeRegister (CONTROL_REG, 0x0);
+      // read ndef data
+      // 0x1C: NDEf begin 0x24: offset to color
+      temp = readData (0x1C + 0x25, 4, data);
+      // ack every interrupts (yes this is a bit harsh)
+      temp = writeRegister (INT_FLAG_REG, 0x00FF );
+      // enable RF
+      temp = writeRegister (CONTROL_REG, CONTROL_REG_VALUE );
+      if (data[1] == 0xFF)
       {
-         // no rf field present, disable RF
-         // we should only disable the right bit !
-         temp = writeRegister (CONTROL_REG, 0x0);
-         // read ndef data
-         // 0x1C: NDEf begin 0x24: offset to color
-         temp = readData (0x1C + 0x25, 4, data);
-         // enable RF
-         temp = writeRegister (CONTROL_REG, RF_ENABLE);
-         if (data[1] == 0xFF)
-         {
-            // first read byte if 0xFF, this is transparency, assume color is ok
-            readColor = ((uint32_t)data[2]<<16) | ((uint32_t)data[3]<<8) | data[4];
-            led.setPixelColor (0, readColor );
-            led.show();
-            // if needed, save new color in eeprom
-            if (savedColor != readColor) {
-               EEPROM.write(0, readColor >> 16);
-               EEPROM.write(1, (readColor >> 8) & 0xFF);
-               EEPROM.write(2, readColor & 0xFF);
-               savedColor = readColor;
-            }
+         // first read byte if 0xFF, this is transparency, assume color is ok
+         readColor = ((uint32_t)data[2]<<16) | ((uint32_t)data[3]<<8) | data[4];
+         led.setPixelColor (0, readColor );
+         led.show();
+         // if needed, save new color in eeprom
+         if (savedColor != readColor) {
+            EEPROM.write(0, readColor >> 16);
+            EEPROM.write(1, (readColor >> 8) & 0xFF);
+            EEPROM.write(2, readColor & 0xFF);
+            savedColor = readColor;
          }
       }
    }
