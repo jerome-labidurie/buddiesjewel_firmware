@@ -53,6 +53,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <avr/sleep.h>
 
 #include "usiTwiMaster.h"
 #include "RF430CL330H.h"
@@ -204,8 +205,8 @@ void rainbow(uint8_t wait) {
  */
 ISR(PCINT0_vect)
 {
-   //    quickBlink (2, BLUE );
-   tag_state = HIGH;
+//    quickBlink (1, BLUE ); // quick 1 blue blink
+   // nothing to do, we just wake up
    return;
 } // ISR(PCINT0_vect) 
 
@@ -213,9 +214,9 @@ ISR(PCINT0_vect)
    
 void setup()
 {
-   // quick 2 blue blinks
    led.begin();
-   quickBlink (1, BLUE );
+   quickBlink (1, BLUE ); // quick 1 blue blink
+   
    USI_TWI_Master_Initialise();
    temp = readRegister  (VERSION_REG, &value);
    quickBlink (value>>8, GREEN );
@@ -224,22 +225,27 @@ void setup()
    // read color from eeprom
    savedColor = ((uint32_t)EEPROM.read(0)<<16) | ((uint32_t)EEPROM.read(1)<<8) | EEPROM.read(2);
    
-   rainbow(5);
+   rainbow(10);
    // Initialize pixel to saved color
    led.setPixelColor (0, savedColor);
    led.show();
-   // Initialize tag with color
+   // Initialize NFC tag with color (and NDEF?)
    // TODO :)
+   
+   temp = writeRegister (INT_ENABLE_REG, EOW_INT_ENABLE);
+   temp = writeRegister (CONTROL_REG,    CONTROL_REG_VALUE );
+   temp = readRegister  (CONTROL_REG,    &value);
+   
+   /** Power budget reduction */
+//    ADCSRA &= ~_BV(ADEN);                     //disable ADC
+//    ACSR |= _BV(ACD); // switch Analog Comparator OFF
+//    // Configure Power Reduction Register (See p39)
+//    PRR |= _BV(PRADC) | _BV(PRTIM1) | _BV(PRTIM0); // switch off ADC clock, Timer1, Timer0
+//    // disable BOD by software (timed sequence see p38)
+//    // useless if BOD not set by fuses
+//    sleep_bod_disable();
 
-   
-   temp = writeRegister (INT_ENABLE_REG,EOW_INT_ENABLE | EOR_INT_ENABLE );
-   temp = writeRegister (CONTROL_REG,CONTROL_REG_VALUE );
-   temp = readRegister  (CONTROL_REG, &value);
-   
-   // initialize interrupts
-   PCMSK |= _BV(PCINT1); // enable interrupt for PCINT1
-   GIMSK |= _BV(PCIE);   // enable Pin Change interrupts
-   sei(); // enable global interrupts
+
 } // setup
 
 void loop()
@@ -247,33 +253,47 @@ void loop()
    uint8_t data[MESSAGEBUF_SIZE]; /** array to store read NDEF data */
    uint32_t readColor = 0;
 
-//    _delay_ms (1000);
-   if ((tag_state == HIGH))
+   /** initialize attiny45 interrupts */
+   PCMSK |= _BV(PCINT1); // enable interrupt for PCINT1
+   GIMSK |= _BV(PCIE);   // enable Pin Change interrupts
+   sei(); // enable global interrupts
+
+   /** go to sleep */
+   set_sleep_mode(SLEEP_MODE_PWR_DOWN); // sleep mode is set here
+   sleep_enable();
+   sleep_cpu(); // go to sleep
+
+   // System continues execution here when wake up occurs
+   cli();                         //wake up here, disable interrupts
+   GIMSK &= ~_BV(PCIE);                  //disable PCIE
+   sleep_disable();               
+   sei();                         //enable interrupts again (but PCIE is disabled from above)
+   quickBlink (1, GREEN); 
+   // TODO check if no rf field present, 
+   // disable RF
+   // TODO: we might only disable the right bit !
+   temp = writeRegister (CONTROL_REG, 0x0);
+   // read ndef data
+   // TODO: test CRC active bit from STATUS_REG 
+   // 0x1C: NDEf begin 0x25: offset to color
+   temp = readData (0x1C + 0x25, 4, data);
+   // ack every interrupts (yes this is a bit harsh)
+   temp = writeRegister (INT_FLAG_REG, 0x00FF );
+   // enable RF
+   temp = writeRegister (CONTROL_REG, CONTROL_REG_VALUE );
+   if (data[1] == 0xFF)
    {
-      tag_state = LOW;
-      // no rf field present, disable RF
-      // TODO: we might only disable the right bit !
-      temp = writeRegister (CONTROL_REG, 0x0);
-      // read ndef data
-      // 0x1C: NDEf begin 0x24: offset to color
-      temp = readData (0x1C + 0x25, 4, data);
-      // ack every interrupts (yes this is a bit harsh)
-      temp = writeRegister (INT_FLAG_REG, 0x00FF );
-      // enable RF
-      temp = writeRegister (CONTROL_REG, CONTROL_REG_VALUE );
-      if (data[1] == 0xFF)
-      {
-         // first read byte if 0xFF, this is transparency, assume color is ok
-         readColor = ((uint32_t)data[2]<<16) | ((uint32_t)data[3]<<8) | data[4];
-         led.setPixelColor (0, readColor );
-         led.show();
-         // if needed, save new color in eeprom
-         if (savedColor != readColor) {
-            EEPROM.write(0, readColor >> 16);
-            EEPROM.write(1, (readColor >> 8) & 0xFF);
-            EEPROM.write(2, readColor & 0xFF);
-            savedColor = readColor;
-         }
+      // first read byte if 0xFF, this is transparency, assume color is ok
+//          readColor = ((uint32_t)data[2]<<16) | ((uint32_t)data[3]<<8) | data[4];
+      readColor = led.Color (data[2], data[3], data[4]);
+      led.setPixelColor (0, readColor );
+      led.show();
+      // if needed, save new color in eeprom
+      if (savedColor != readColor) {
+         EEPROM.write(0, readColor >> 16);
+         EEPROM.write(1, (readColor >> 8) & 0xFF);
+         EEPROM.write(2, readColor & 0xFF);
+         savedColor = readColor;
       }
    }
 } // loop
