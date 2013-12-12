@@ -176,29 +176,45 @@ uint8_t writeRegister (uint16_t reg, uint16_t value)
    return USI_TWI_Get_State_Info();
 } // writeRegister
 
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos) {
-  if(WheelPos < 85) {
-   return led.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-  } else if(WheelPos < 170) {
-   WheelPos -= 85;
-   return led.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  } else {
-   WheelPos -= 170;
-   return led.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-  }
-}
 
-void rainbow(uint8_t wait) {
-  uint16_t i, j;
-
-  for(j=0; j<256; j++) {
-   led.setPixelColor(i, Wheel((i+j) & 255));
-   led.show();
-    delay(wait);
-  }
-}
+/** go to designated color step by step
+ * @param color 
+ * @param wait delay (ms) between each step
+ */
+void gotoColor (uint32_t color, uint8_t wait)
+{
+//       led.setPixelColor (0, color);
+//       led.show();
+//       return;
+   uint32_t cColor = led.getPixelColor(0);
+   uint8_t rc = led.getPixelColor(0) >> 16;
+   uint8_t gc = led.getPixelColor(0) >> 8 & 0xFF;
+   uint8_t bc = led.getPixelColor(0) & 0xFF;
+   int8_t ri=1,gi=1,bi=1;
+   
+   if ( (rc) > (color>>16) ) {
+      ri = -1;
+   }
+   if ( (gc) > (color>>8&0xFF) ) {
+      gi = -1;
+   }
+   if ( (bc) > (color&0xFF) ) {
+      bi = -1;
+   }
+   
+   while (cColor != color) {
+      if (rc != (color>>16))
+         rc += ri;
+      if (gc != (color>>8&0xFF))
+         gc += gi;
+      if (bc != (color&0xFF))
+         bc += bi;
+      cColor = led.Color (rc,gc,bc);
+      led.setPixelColor (0, cColor);
+      led.show();
+      delay(wait);
+   }
+} // gotoColor
 
 /** interrupt service routine
  * called when PCINT changes state
@@ -225,10 +241,10 @@ void setup()
    // read color from eeprom
    savedColor = ((uint32_t)EEPROM.read(0)<<16) | ((uint32_t)EEPROM.read(1)<<8) | EEPROM.read(2);
    
-   rainbow(10);
    // Initialize pixel to saved color
-   led.setPixelColor (0, savedColor);
-   led.show();
+//    led.setPixelColor (0, savedColor);
+//    led.show();
+   gotoColor (savedColor,10);
    // Initialize NFC tag with color (and NDEF?)
    // TODO :)
    
@@ -268,7 +284,7 @@ void loop()
    GIMSK &= ~_BV(PCIE);                  //disable PCIE
    sleep_disable();               
    sei();                         //enable interrupts again (but PCIE is disabled from above)
-   quickBlink (1, GREEN); 
+//    quickBlink (1, GREEN); 
    // TODO check if no rf field present, 
    // disable RF
    // TODO: we might only disable the right bit !
@@ -286,8 +302,9 @@ void loop()
       // first read byte if 0xFF, this is transparency, assume color is ok
 //          readColor = ((uint32_t)data[2]<<16) | ((uint32_t)data[3]<<8) | data[4];
       readColor = led.Color (data[2], data[3], data[4]);
-      led.setPixelColor (0, readColor );
-      led.show();
+//       led.setPixelColor (0, readColor );
+//       led.show();
+      gotoColor (readColor,10);
       // if needed, save new color in eeprom
       if (savedColor != readColor) {
          EEPROM.write(0, readColor >> 16);
