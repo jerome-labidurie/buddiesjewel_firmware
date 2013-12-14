@@ -177,21 +177,23 @@ uint8_t writeRegister (uint16_t reg, uint16_t value)
 } // writeRegister
 
 
-/** go to designated color step by step
- * @param color 
+/** Go to designated color
+ * 
+ * Fade from current color. Each component (R,G,B) are (inc|dec)remented
+ * by one step up to the given color.
+ * 
+ * @param color to go
  * @param wait delay (ms) between each step
  */
 void gotoColor (uint32_t color, uint8_t wait)
 {
-//       led.setPixelColor (0, color);
-//       led.show();
-//       return;
-   uint32_t cColor = led.getPixelColor(0);
-   uint8_t rc = led.getPixelColor(0) >> 16;
-   uint8_t gc = led.getPixelColor(0) >> 8 & 0xFF;
-   uint8_t bc = led.getPixelColor(0) & 0xFF;
-   int8_t ri=1,gi=1,bi=1;
+   uint32_t cColor = led.getPixelColor(0);  /** current color */
+   uint8_t rc = cColor >> 16;               /** current red */
+   uint8_t gc = cColor >> 8 & 0xFF;         /** current green */
+   uint8_t bc = cColor & 0xFF;              /** current blue */
+   int8_t  ri=1,gi=1,bi=1;                  /** inc/dec for each component */
    
+   // compute inc or dec for each component
    if ( (rc) > (color>>16) ) {
       ri = -1;
    }
@@ -202,6 +204,7 @@ void gotoColor (uint32_t color, uint8_t wait)
       bi = -1;
    }
    
+   // goto
    while (cColor != color) {
       if (rc != (color>>16))
          rc += ri;
@@ -242,11 +245,8 @@ void setup()
    savedColor = ((uint32_t)EEPROM.read(0)<<16) | ((uint32_t)EEPROM.read(1)<<8) | EEPROM.read(2);
    
    // Initialize pixel to saved color
-//    led.setPixelColor (0, savedColor);
-//    led.show();
    gotoColor (savedColor,10);
-   // Initialize NFC tag with color (and NDEF?)
-   // TODO :)
+   // TODO: Initialize NFC tag with color (and NDEF?)
    
    temp = writeRegister (INT_ENABLE_REG, EOW_INT_ENABLE);
    temp = writeRegister (CONTROL_REG,    CONTROL_REG_VALUE );
@@ -255,10 +255,11 @@ void setup()
    /** Power budget reduction */
 //    ADCSRA &= ~_BV(ADEN);                     //disable ADC
 //    ACSR |= _BV(ACD); // switch Analog Comparator OFF
-//    // Configure Power Reduction Register (See p39)
+      //    Configure Power Reduction Register (See p39)
 //    PRR |= _BV(PRADC) | _BV(PRTIM1) | _BV(PRTIM0); // switch off ADC clock, Timer1, Timer0
-//    // disable BOD by software (timed sequence see p38)
-//    // useless if BOD not set by fuses
+//    PRR |= _BV(PRADC) ;// switch off ADC clock, Timer1, Timer0
+      //    disable BOD by software (timed sequence see p38)
+//    useless if BOD not set by fuses
 //    sleep_bod_disable();
 
 
@@ -284,13 +285,19 @@ void loop()
    GIMSK &= ~_BV(PCIE);                  //disable PCIE
    sleep_disable();               
    sei();                         //enable interrupts again (but PCIE is disabled from above)
-//    quickBlink (1, GREEN); 
-   // TODO check if no rf field present, 
+//    quickBlink (1, GREEN);
+
+   // Wait for no rf field present,
+   // well not needed as EOW int occurs when RF field is off after a write
+//    temp = readRegister  (CONTROL_REG,    &value);
+//    while ( (value & RF_BUSY) != 0) {
+//       _delay_ms (1);
+//       temp = readRegister  (CONTROL_REG,    &value);
+//    }
    // disable RF
    // TODO: we might only disable the right bit !
    temp = writeRegister (CONTROL_REG, 0x0);
    // read ndef data
-   // TODO: test CRC active bit from STATUS_REG 
    // 0x1C: NDEf begin 0x25: offset to color
    temp = readData (0x1C + 0x25, 4, data);
    // ack every interrupts (yes this is a bit harsh)
@@ -300,10 +307,7 @@ void loop()
    if (data[1] == 0xFF)
    {
       // first read byte if 0xFF, this is transparency, assume color is ok
-//          readColor = ((uint32_t)data[2]<<16) | ((uint32_t)data[3]<<8) | data[4];
       readColor = led.Color (data[2], data[3], data[4]);
-//       led.setPixelColor (0, readColor );
-//       led.show();
       gotoColor (readColor,10);
       // if needed, save new color in eeprom
       if (savedColor != readColor) {
