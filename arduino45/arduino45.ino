@@ -253,14 +253,13 @@ void setup()
    temp = readRegister  (CONTROL_REG,    &value);
    
    /** Power budget reduction */
-//    ADCSRA &= ~_BV(ADEN);                     //disable ADC
-//    ACSR |= _BV(ACD); // switch Analog Comparator OFF
-      //    Configure Power Reduction Register (See p39)
-//    PRR |= _BV(PRADC) | _BV(PRTIM1) | _BV(PRTIM0); // switch off ADC clock, Timer1, Timer0
-//    PRR |= _BV(PRADC) ;// switch off ADC clock, Timer1, Timer0
-      //    disable BOD by software (timed sequence see p38)
-//    useless if BOD not set by fuses
-//    sleep_bod_disable();
+   ADCSRA &= ~_BV(ADEN);            // disable ADC
+   ACSR |= _BV(ACD);                // switch Analog Comparator OFF
+   // Configure Power Reduction Register (See p39)
+   PRR |= _BV(PRADC) | _BV(PRTIM0); // switch off ADC clock, Timer0
+   // disable BOD by software (timed sequence see p38)
+   // useless if BOD not set by fuses
+   sleep_bod_disable();
 
 
 } // setup
