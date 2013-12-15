@@ -88,7 +88,6 @@ Adafruit_NeoPixel led = Adafruit_NeoPixel(1, NEO, NEO_GRB + NEO_KHZ800);
 uint8_t temp = 0;    /** temporary variable */
 uint16_t value = 0;  /** used to store read values from registers */
 uint32_t savedColor = 0x000000; /** color read from eeprom */
-volatile int tag_state = LOW; /** tag has been accedded */
 
 /** do some quick blinks
  * @param n number of blinks
@@ -238,8 +237,8 @@ void setup()
    
    USI_TWI_Master_Initialise();
    temp = readRegister  (VERSION_REG, &value);
-   quickBlink (value>>8, GREEN );
-   quickBlink (value, GREEN);
+   quickBlink (value>>8,   BLUE );
+   quickBlink (value&0xFF, BLUE );
 
    // read color from eeprom
    savedColor = ((uint32_t)EEPROM.read(0)<<16) | ((uint32_t)EEPROM.read(1)<<8) | EEPROM.read(2);
@@ -297,7 +296,7 @@ void loop()
    // TODO: we might only disable the right bit !
    temp = writeRegister (CONTROL_REG, 0x0);
    // read ndef data
-   // 0x1C: NDEf begin 0x25: offset to color
+   // 0x1C: NDEF begin 0x25: offset to color
    temp = readData (0x1C + 0x25, 4, data);
    // ack every interrupts (yes this is a bit harsh)
    temp = writeRegister (INT_FLAG_REG, 0x00FF );
