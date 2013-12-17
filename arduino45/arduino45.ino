@@ -85,8 +85,8 @@
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 Adafruit_NeoPixel led = Adafruit_NeoPixel(1, NEO, NEO_GRB + NEO_KHZ800);
 
-uint8_t temp = 0;    /** temporary variable */
-uint16_t value = 0;  /** used to store read values from registers */
+uint8_t temp = 0;               /** temporary variable */
+uint16_t value = 0;             /** used to store read values from registers */
 uint32_t savedColor = 0x000000; /** color read from eeprom */
 
 /** do some quick blinks
@@ -253,9 +253,9 @@ void setup()
    
    /** Power budget reduction */
    ADCSRA &= ~_BV(ADEN);            // disable ADC
-   ACSR |= _BV(ACD);                // switch Analog Comparator OFF
+   ACSR   |=  _BV(ACD);             // switch Analog Comparator OFF
    // Configure Power Reduction Register (See p39)
-   PRR |= _BV(PRADC) | _BV(PRTIM0); // switch off ADC clock, Timer0
+   PRR    |=  _BV(PRADC) | _BV(PRTIM0); // switch off ADC clock, Timer0
    // disable BOD by software (timed sequence see p38)
    // useless if BOD not set by fuses
    sleep_bod_disable();
@@ -279,10 +279,10 @@ void loop()
    sleep_cpu(); // go to sleep
 
    // System continues execution here when wake up occurs
-   cli();                         //wake up here, disable interrupts
-   GIMSK &= ~_BV(PCIE);                  //disable PCIE
+   cli();                // wake up here, disable interrupts
+   GIMSK &= ~_BV(PCIE);  // disable PCIE
    sleep_disable();               
-   sei();                         //enable interrupts again (but PCIE is disabled from above)
+   sei();                // enable interrupts again (but PCIE is disabled from above)
 //    quickBlink (1, GREEN);
 
    // Wait for no rf field present,
@@ -295,16 +295,13 @@ void loop()
    // disable RF
    // TODO: we might only disable the right bit !
    temp = writeRegister (CONTROL_REG, 0x0);
-   // read ndef data
-   // 0x1C: NDEF begin 0x25: offset to color
-   temp = readData (0x1C + 0x25, 4, data);
    // ack every interrupts (yes this is a bit harsh)
    temp = writeRegister (INT_FLAG_REG, 0x00FF );
-   // enable RF
-   temp = writeRegister (CONTROL_REG, CONTROL_REG_VALUE );
-   if (data[1] == 0xFF)
-   {
-      // first read byte if 0xFF, this is transparency, assume color is ok
+   // read ndef data mime type (should be "bijou")
+   temp = readData (0x1C + 0x20, 6, data);
+   if ( strncmp ((char*)data+1, "bijou", 5) == 0) {
+      // 0x1C: NDEF begin 0x25: offset to color
+      temp = readData (0x1C + 0x25, 4, data);
       readColor = led.Color (data[2], data[3], data[4]);
       gotoColor (readColor,10);
       // if needed, save new color in eeprom
@@ -315,5 +312,8 @@ void loop()
          savedColor = readColor;
       }
    }
+//    else quickBlink(1,RED);
+   // enable RF
+   temp = writeRegister (CONTROL_REG, CONTROL_REG_VALUE );
 } // loop
 
